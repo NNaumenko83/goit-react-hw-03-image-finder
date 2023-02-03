@@ -1,10 +1,11 @@
 import React from 'react';
+import { ButtonLoadMore } from './Button.styled';
 
-const Button = ({ onClick }) => {
+const Button = ({ onClick, disabled }) => {
   return (
-    <button type="button" onClick={onClick}>
+    <ButtonLoadMore type="button" onClick={onClick} disabled={disabled}>
       Load more
-    </button>
+    </ButtonLoadMore>
   );
 };
 

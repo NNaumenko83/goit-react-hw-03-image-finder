@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import ImageGalleryItem from '../ImageGalleryItem';
 import Button from 'components/Button';
 import { getPhotos } from '../../services/api';
+import { ImageGalleryList } from './ImageGallery.styled';
+import Loader from '../Loader';
 
 class ImageGallery extends Component {
   state = {
@@ -9,7 +11,75 @@ class ImageGallery extends Component {
     page: 1,
     images: [],
     totalPages: null,
+    isLoading: false,
   };
+
+  async componentDidMount() {
+    console.log('componentDidMount');
+    this.setState({ query: this.props.query });
+  }
+
+  async componentDidUpdate(_, prevState) {
+    console.log('componentDidUpdate');
+
+    if (this.state.query !== prevState.query) {
+      try {
+        this.setState({ isLoading: true });
+        const response = await getPhotos(this.state.query, this.state.page);
+        const totalPages = Math.ceil(response.totalHits / 12);
+
+        const imagesArray = response.hits;
+
+        this.setState({
+          images: imagesArray.map(image => ({
+            id: image.id,
+            webformatURL: image.webformatURL,
+            largeImageURL: image.largeImageURL,
+          })),
+          totalPages: totalPages,
+        });
+      } catch (error) {
+        console.log(error);
+      } finally {
+        this.setState({ isLoading: false });
+      }
+
+      return;
+    }
+
+    if (prevState.page !== this.state.page) {
+      try {
+        this.setState({ isLoading: true });
+        const response = await getPhotos(this.state.query, this.state.page);
+        const newImagesArray = response.hits.map(image => ({
+          id: image.id,
+          webformatURL: image.webformatURL,
+          largeImageURL: image.largeImageURL,
+        }));
+
+        this.setState(prevState => ({
+          images: [...prevState.images, ...newImagesArray],
+        }));
+      } catch (error) {
+        console.log(error);
+      } finally {
+        this.setState({ isLoading: false });
+      }
+      return;
+    }
+
+    if (this.state.query !== this.props.query) {
+      this.setState({
+        query: this.props.query,
+        page: 1,
+        images: [],
+        totalPages: null,
+      });
+      return;
+    }
+
+    return;
+  }
 
   handleBattonClick = () => {
     if (this.state.totalPages === this.state.page) {
@@ -27,74 +97,10 @@ class ImageGallery extends Component {
     );
   };
 
-  async componentDidMount() {
-    console.log('componentDidMount');
-    this.setState({ query: this.props.query });
-  }
-
-  async componentDidUpdate(_, prevState) {
-    console.log('componentDidUpdate');
-
-    if (this.state.query !== prevState.query) {
-      try {
-        const response = await getPhotos(this.state.query, this.state.page);
-        const totalPages = Math.ceil(response.totalHits / 12);
-        console.log(totalPages);
-        const imagesArray = response.hits;
-        console.log(imagesArray);
-        this.setState({
-          images: imagesArray.map(image => ({
-            id: image.id,
-            webformatURL: image.webformatURL,
-            largeImageURL: image.largeImageURL,
-          })),
-          totalPages: totalPages,
-        });
-      } catch (error) {
-        console.log(error);
-      }
-      console.log('after try');
-      return;
-    }
-
-    if (prevState.page !== this.state.page) {
-      try {
-        const response = await getPhotos(this.state.query, this.state.page);
-        const newImagesArray = response.hits.map(image => ({
-          id: image.id,
-          webformatURL: image.webformatURL,
-          largeImageURL: image.largeImageURL,
-        }));
-
-        console.log(newImagesArray);
-
-        this.setState(prevState => ({
-          images: [...prevState.images, ...newImagesArray],
-        }));
-      } catch (error) {
-        console.log(error);
-      }
-      console.log('after try');
-      return;
-    }
-
-    if (this.state.query !== this.props.query) {
-      this.setState({
-        query: this.props.query,
-        page: 1,
-        images: [],
-        totalPages: null,
-      });
-      return;
-    }
-
-    return;
-  }
-
   render() {
     return (
       <>
-        <ul>
+        <ImageGalleryList>
           {this.state.images.map(image => (
             <ImageGalleryItem
               key={image.id}
@@ -105,8 +111,14 @@ class ImageGallery extends Component {
               }}
             />
           ))}
-        </ul>
-        <Button onClick={this.handleBattonClick} />
+        </ImageGalleryList>
+        {this.state.isLoading && <Loader />}
+        {this.state.totalPages > 1 && (
+          <Button
+            onClick={this.handleBattonClick}
+            disabled={this.state.totalPages === this.state.page}
+          />
+        )}
       </>
     );
   }
