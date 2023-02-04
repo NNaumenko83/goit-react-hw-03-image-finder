@@ -20,8 +20,6 @@ export const getPhotos = async (q, page) => {
     },
   };
 
-  console.log(config);
-
   const response = await instance.get('/', config);
   return response.data;
 };

@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import css from './App.module.css';
 import Searchbar from '../Searchbar';
 import ImageGallery from '../ImageGallery';
@@ -10,12 +13,11 @@ export class App extends Component {
     largeImageURL: '',
   };
 
-  onSubmit = ({ newQuery }) => {
+  onSubmit = newQuery => {
     this.setState({ query: newQuery });
   };
 
   handleImageClick = image => {
-    console.log(image);
     this.setState({ largeImageURL: image });
   };
 
@@ -24,20 +26,31 @@ export class App extends Component {
   };
 
   render() {
-    const { query } = this.state;
-    console.log(!!this.state.largeImageURL.length);
+    const { query, largeImageURL } = this.state;
 
     return (
       <div className={css.App}>
         <Searchbar onSubmit={this.onSubmit} />
-        {this.state.query && (
+        {query && (
           <ImageGallery query={query} onImageClick={this.handleImageClick} />
         )}
-        {this.state.largeImageURL && (
+        {largeImageURL && (
           <Modal closeModal={this.closeModal}>
-            <img src={this.state.largeImageURL} alt="XXX" />
+            <img src={largeImageURL} alt="XXX" />
           </Modal>
         )}
+        <ToastContainer
+          position="top-center"
+          autoClose={1000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </div>
     );
   }

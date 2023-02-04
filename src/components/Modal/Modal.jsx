@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { createPortal } from 'react-dom';
 import { Overlay, LargeImage } from './Modal.styled';
+import PropTypes from 'prop-types';
 
 const modalRoot = document.getElementById('modal-root');
 
@@ -15,23 +16,21 @@ class Modal extends Component {
 
   handleKeyDown = e => {
     if (e.code === 'Escape') {
-      console.log('Натисеули Esc');
       this.props.closeModal();
     }
   };
 
   handleOverlayClick = e => {
-    console.log(e.currentTarget);
-    console.log(e.target);
     if (e.currentTarget === e.target) {
       this.props.closeModal();
     }
   };
 
   render() {
+    const { children } = this.props;
     return createPortal(
       <Overlay onClick={this.handleOverlayClick}>
-        <LargeImage>{this.props.children}</LargeImage>
+        <LargeImage>{children}</LargeImage>
       </Overlay>,
       modalRoot
     );
@@ -39,3 +38,7 @@ class Modal extends Component {
 }
 
 export default Modal;
+
+Modal.propTypes = {
+  closeModal: PropTypes.func.isRequired,
+};
